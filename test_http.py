@@ -12,7 +12,7 @@ class FlaskAppTests(unittest.TestCase):
     def test_home_page(self):
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Strange Blog', response.data)
+        self.assertIn(b'Things I Can Do', response.data)
 
     # Test that blog page responds with code: '200 OK' and response should contain the text 'My first try at freelancing'
     def test_post_page(self):

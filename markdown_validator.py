@@ -1,5 +1,6 @@
 import os
 import re
+import unittest
 
 # Load template file for md
 def load_template_fields(template_path):
@@ -12,49 +13,46 @@ def load_template_fields(template_path):
 
     return required_fields
 
-def validate_markdown(file_path, required_fields):
-    firstNine=[]
-    with open(file_path, 'r') as file:
-        # Save the first nin rows of template (header)
-        for i, riga in enumerate(file):
-            if i < 9:
-                firstNine.append(riga.strip())
-            else:
-                break
-        content = file.read()
+class TestMarkdownValidation(unittest.TestCase):
+    
+    def setUp(self):
+        self.template_path = 'posts/template.md.tmpl'
+        self.directory = 'posts/en'
+        self.required_fields = load_template_fields(self.template_path)
 
-    for i,field in enumerate(required_fields):
-        # Check if field is in the markdown file
-        if not field in firstNine[i]:
-            return False
-        # Check for different patterns of particular fields 
-        if field=='author_image':
-            pattern = r'^author_image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
-            if not re.match(pattern,firstNine[i]):
-                return False
-        elif field=='date':
-            pattern = r'^date:\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}$'
-            if not re.match(pattern,firstNine[i]):
-                return False
-        elif field=='image':
-            pattern = r'^image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
-            if not re.match(pattern,firstNine[i]):
-                return False
-        
-    # Check if the markdown file contains the '---' separator
-    if '---' not in content:
-        return False
+    def validate_markdown(self, file_path):
+        firstNine = []
+        with open(file_path, 'r') as file:
+            # Save the first nine rows of the template (header)
+            for i, line in enumerate(file):
+                if i < 9:
+                    firstNine.append(line.strip())
+                else:
+                    break
+            content = file.read()
 
-    return True
+        for i, field in enumerate(self.required_fields):
+            # Check if field is in the markdown file
+            self.assertIn(field, firstNine[i], f'Field {field} not found in {file_path}')
+            
+            # Check for different patterns of particular fields 
+            if field == 'author_image':
+                pattern = r'^author_image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
+                self.assertRegex(firstNine[i], pattern, f'Field {field} does not match the pattern')
+            elif field == 'date':
+                pattern = r'^date:\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}$'
+                self.assertRegex(firstNine[i], pattern, f'Field {field} does not match the pattern')
+            elif field == 'image':
+                pattern = r'^image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
+                self.assertRegex(firstNine[i], pattern, f'Field {field} does not match the pattern')
+            
+        # Check if the markdown file contains the '---' separator
+        self.assertIn('---', content, f"The string '---' is not contained in {file_path}")
 
-def validate_all_markdown(directory, template_path):
-    required_fields = load_template_fields(template_path)
-    for filename in os.listdir(directory):
-        if filename.endswith('.md'):
-            return validate_markdown(os.path.join(directory, filename), required_fields)
+    def test_validate_all_markdown(self):
+        for filename in os.listdir(self.directory):
+            if filename.endswith('.md'):
+                self.validate_markdown(os.path.join(self.directory, filename))
 
 if __name__ == '__main__':
-    template_path = 'posts/template.md.tmpl'
-    directory = 'posts/en'
-    validate_all_markdown(directory, template_path)
-
+    unittest.main()

@@ -1,34 +1,60 @@
 import os
 import re
 
-# List of required fields in the markdown file
-REQUIRED_FIELDS = [
-    'title', 'subtitle', 'author', 'author_image',
-    'date', 'image', 'permalink', 'tags', 'shortcontent'
-]
-
-def validate_markdown(file_path):
-    with open(file_path, 'r') as file:
+# Load template file for md
+def load_template_fields(template_path):
+    with open(template_path, 'r') as file:
         content = file.read()
 
-    # Check if each required field is present and correctly formatted
-    for field in REQUIRED_FIELDS:
-        if not re.search(f'^{field}: .+', content, re.MULTILINE):
-            # print(f'Missing or incorrect {field} in {file_path}')
+    # Regex to extract fields in template
+    field_pattern = re.compile(r'^(\w+): .+', re.MULTILINE)
+    required_fields = field_pattern.findall(content)
+
+    return required_fields
+
+def validate_markdown(file_path, required_fields):
+    firstNine=[]
+    with open(file_path, 'r') as file:
+        # Save the first nin rows of template (header)
+        for i, riga in enumerate(file):
+            if i < 9:
+                firstNine.append(riga.strip())
+            else:
+                break
+        content = file.read()
+
+    for i,field in enumerate(required_fields):
+        # Check if field is in the markdown file
+        if not field in firstNine[i]:
             return False
+        # Check for different patterns of particular fields 
+        if field=='author_image':
+            pattern = r'^author_image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
+            if not re.match(pattern,firstNine[i]):
+                return False
+        elif field=='date':
+            pattern = r'^date:\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}$'
+            if not re.match(pattern,firstNine[i]):
+                return False
+        elif field=='image':
+            pattern = r'^image:\s+[\w.-]+\.(jpg|jpeg|png|gif|bmp)$'
+            if not re.match(pattern,firstNine[i]):
+                return False
         
     # Check if the markdown file contains the '---' separator
     if '---' not in content:
-        # print(f'Missing --- separator in {file_path}')
         return False
 
-    # print(f'{file_path} is valid.')
     return True
 
-def validate_all_markdown(directory):
+def validate_all_markdown(directory, template_path):
+    required_fields = load_template_fields(template_path)
     for filename in os.listdir(directory):
         if filename.endswith('.md'):
-            validate_markdown(os.path.join(directory, filename))
+            return validate_markdown(os.path.join(directory, filename), required_fields)
 
 if __name__ == '__main__':
-    validate_all_markdown('posts/en')
+    template_path = 'posts/template.md.tmpl'
+    directory = 'posts/en'
+    validate_all_markdown(directory, template_path)
+

@@ -1,6 +1,6 @@
 version: '3.8'
 
-# Create app from Dockerfile mapping port 5000
+# Create app from Dockerfile mapping port 8080
 services:
   app:
     image: my-flask-app:latest
@@ -8,13 +8,13 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "8080:8080"
     # Dependency id DB service that starts before
     depends_on:
       - db
     # Set environment variable for postgresql
     environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.17.0.2/blog
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.18.0.2/blog
 
   # Create db service mapping port 5432
   db:

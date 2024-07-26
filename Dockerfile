@@ -1,5 +1,5 @@
-# Image specification (lighter version of Python 3.8)
-FROM python:3.8-slim
+# Image specification (lighter version of Python 3.9)
+FROM python:3.9-slim
 
 # Working directory on container
 WORKDIR /app
@@ -11,5 +11,11 @@ RUN pip install -r requirements.txt
 # Copy all files from host to '/app' on docker
 COPY . .
 
-# Run command 'flask run' accessible from all the interfaces
-CMD ["flask", "run", "--host=0.0.0.0"]
+# Copy the kickstart.sh script into the container
+COPY kickstart.sh /app/kickstart.sh
+
+# Make sure the kickstart.sh is executable
+RUN chmod +x /app/kickstart.sh
+
+# Set the entrypoint to the script
+ENTRYPOINT ["/app/kickstart.sh"]

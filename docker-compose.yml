@@ -14,7 +14,7 @@ services:
       - db
     # Set environment variable for postgresql
     environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.18.0.2/blog
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
 
   # Create db service mapping port 5432
   db:
@@ -38,7 +38,7 @@ services:
     depends_on:
       - db
     environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.18.0.2/blog
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
 
 volumes:
   db_data:

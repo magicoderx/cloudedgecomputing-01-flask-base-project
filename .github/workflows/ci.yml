@@ -31,7 +31,7 @@ jobs:
         python markdown_validator.py
 
     - name: Build temporary docker image
-      run: docker-compose build -d
+      run: docker-compose build
 
     - name: Run test for http responses
       run: |

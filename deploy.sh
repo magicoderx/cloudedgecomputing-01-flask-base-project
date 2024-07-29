@@ -16,4 +16,5 @@ sshpass -p "$SSH_PSWD" ssh -o StrictHostKeyChecking=no -p 3224 -tt $SERVER << 'E
 cd /data/proj/
 docker-compose down
 docker-compose up --build -d
+exit
 ENDSSH

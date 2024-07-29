@@ -30,12 +30,20 @@ jobs:
       run: |
         python markdown_validator.py
 
-    - name: Build temporary docker image
-      run: docker-compose build
+    - name: Build temporary docker image and create network
+      run: |
+        docker network create test_net
+        docker-compose build
 
     - name: Run test for http responses
       run: |
-        docker run --rm -e RUN_TESTS=true test
+        docker run --rm --name db --network my_network -d -p 5432:5432 -e POSTGRES_PASSWORD=passwordhere -e POSTGRES_USER=flask -e POSTGRES_DB=blog postgres:13
+        docker run --rm --network my_network -e RUN_TESTS=true test
+
+    - name: Delete temporary containers and network
+      run: |
+        docker stop db 
+        docker network rm test_net
 
   deploy:
     runs-on: ubuntu-latest

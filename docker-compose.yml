@@ -14,7 +14,7 @@ services:
       - db
     # Set environment variable for postgresql
     environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.18.0.2/blog
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
 
   # Create db service mapping port 5432
   db:
@@ -28,6 +28,17 @@ services:
     # Create volume for data persistence
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  test:
+    image: test:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/kickstart.sh"]
+    depends_on:
+      - db
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
 
 volumes:
   db_data:

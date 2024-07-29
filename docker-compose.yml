@@ -30,7 +30,7 @@ services:
       - db_data:/var/lib/postgresql/data
 
   test:
-    image: my-flask-app:latest
+    image: test:latest
     build:
       context: .
       dockerfile: Dockerfile

@@ -60,5 +60,5 @@ jobs:
 
     - name: Run deploy on AWS
       run: |
-        chmod +x deploy.sh
-        ./deploy.sh
+        chmod +x ../../deploy.sh
+        ./../../deploy.sh

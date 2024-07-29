@@ -15,6 +15,6 @@ sshpass -p "$SSH_PSWD" rsync -e 'ssh -o StrictHostKeyChecking=no -p 3224' -avz -
 sshpass -p "$SSH_PSWD" ssh -o StrictHostKeyChecking=no -p 3224 -tt $SERVER << 'ENDSSH'
 cd /data/proj/
 docker-compose down
-docker-compose up --build -d
+COMPOSE_PROFILES=production docker-compose up --build -d
 exit
 ENDSSH

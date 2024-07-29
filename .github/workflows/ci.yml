@@ -37,8 +37,8 @@ jobs:
 
     - name: Run test for http responses
       run: |
-        docker run --rm --name db --network my_network -d -p 5432:5432 -e POSTGRES_PASSWORD=passwordhere -e POSTGRES_USER=flask -e POSTGRES_DB=blog postgres:13
-        docker run --rm --network my_network -e RUN_TESTS=true test
+        docker run --rm --name db --network test_net -d -p 5432:5432 -e POSTGRES_PASSWORD=passwordhere -e POSTGRES_USER=flask -e POSTGRES_DB=blog postgres:13
+        docker run --rm --network test_net -e RUN_TESTS=true test
 
     - name: Delete temporary containers and network
       run: |

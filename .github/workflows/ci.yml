@@ -31,11 +31,11 @@ jobs:
         python markdown_validator.py
 
     - name: Build temporary docker image
-      run: docker-compose up --build -d
+      run: docker-compose --build -d
 
     - name: Run test for http responses
       run: |
-        docker run --rm -e RUN_TESTS=true cloudedgecomputing-01-flask-base-project-app-1
+        docker run --rm -e RUN_TESTS=true test
 
   deploy:
     runs-on: ubuntu-latest

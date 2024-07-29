@@ -29,6 +29,17 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  test:
+    image: my-flask-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/kickstart.sh"]
+    depends_on:
+      - db
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@172.18.0.2/blog
+
 volumes:
   db_data:
 

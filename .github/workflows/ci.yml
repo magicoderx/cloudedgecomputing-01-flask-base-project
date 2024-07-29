@@ -48,8 +48,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: test
-    env:
-      SSH_PSWD: ${{ secrets.SSH_PSWD }}
 
     steps:
     - name: Checkout code
@@ -61,6 +59,8 @@ jobs:
         python-version: '3.10'
 
     - name: Run deploy on AWS
+      env:
+        SSH_PSWD: ${{ secrets.SSH_PSWD }}
       run: |
         chmod +x deploy.sh
         ./deploy.sh

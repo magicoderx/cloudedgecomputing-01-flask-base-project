@@ -60,8 +60,5 @@ jobs:
 
     - name: Run deploy on AWS
       run: |
-        echo $PWD
-        ls -lah
-        find / -name deploy.sh
         chmod +x deploy.sh
-        ./../../deploy.sh
+        ./deploy.sh

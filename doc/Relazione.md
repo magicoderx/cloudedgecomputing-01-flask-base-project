@@ -64,18 +64,21 @@ Dato che l'applicazione si basa su un database per leggere i post dei blog, l'id
 Infine viene definito il test che crea un'immagine, appunto di test, costruita come se fosse un'app in produzione
 
 ### Deploy
-La fase finale del CD/CI è proprio il deploy dell'applicazione su un'istanza EC2 di AWS. Il deploy viene eseguito tramite un banale [script](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/deploy.sh) che controlla se ci sono o meno delle variabili nel file *.env* locale, ed esegue un rsync sulla macchina remota, copiando al suo interno tutti i file (tranne quelli di github). Dopodiché viene fatta una connessione ssh in cui viene spento il docker compose se attivo per poi costruire quello aggiornato e far partire l'applicazione nel server remoto.
+La fase finale del CI/CD è proprio il deploy dell'applicazione su un'istanza EC2 di AWS. Il deploy viene eseguito tramite un banale [script](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/deploy.sh) che controlla se ci sono o meno delle variabili nel file *.env* locale, ed esegue un rsync sulla macchina remota, copiando al suo interno tutti i file (tranne quelli di github). Dopodiché viene fatta una connessione ssh in cui viene spento il docker compose se attivo per poi costruire quello aggiornato e far partire l'applicazione nel server remoto.
 
 Per accedere al server remoto viene utilizzata una password che può trovarsi in locale allo sviluppatore in un file *.env* oppure, come in questo caso, all'interno dell'ambiente di github: più precisamente nella sezione *Secrets and variables*->*Actions*->*Repository secrets*, Per il deploy da github è stato scelto di utilizzare questo metodo grazie alla sicurezza fornita da GitHub stesso.
 
 #### VM AWS
 La Virtual Machine di AWS è ospitata su un server nella regione di Francoforte ed è un'istanza di tipo T2.small e a cui è attaccato un disco EBS in gp3 su cui è installato il sistema operativo CentOS Stream 9. È stata scelta una VM general purpose in quanto non richiede prestazioni particolari e specifiche. Per accedere a questa macchina in SSH si può accedere tramite una porta (non standard) sia con utente/password che tramite una chiave privata, e le porte dall'esterno sono gestite da un apposito Security Group 
 
-### CD/CI
+### CI/CD
 Per gestire questo workflow è stato creato un file [ci](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/.github/workflows/ci.yml). Il flusso parte quando viene fatto un push al branch principale o quando fiene fatta una pull request sempre verso il branch main. Il primo job che viene eseguito è il test in cui, dopo aver ottenuto il codice dal repository, si configura un ambiente Python in cui vengono installate le dipendenze necessarie che si trovano nel file *requirements.txt*. Da qui parte il primo script Python per eseguire la validazione del markdown e il test per le risposte HTTP che crea un ambiente di testing con tanto di network in cui inserire il db e l'applicazione in modo che possano comunicare tra loro. Viene pulito poi tutto una volta terminato il test
 
 Se il test va a buon fine si passa alla fase di deploy che sostanzialmente non fa altro che eseguire lo script del deploy su AWS. Qui viene impostata la variabile d'ambiente creata nei secrets del repository (la password che utilizzerà lo script per collegarsi in ssh)
 
-Se anche il deploy va a buon fine si può ritenere completata con successo la pipeline CD/CI
+Se anche il deploy va a buon fine si può ritenere completata con successo la pipeline CI/CD
 
 ## Sviluppi futuri
+Attualmente il progetto tratta soltanto un'applicazione flask containerizzata, sarebbe interessante create un'automazione del monitoraggio, implementando degli strumenti per il monitoraggio continuo della performance e della sicurezza. Un'idea potrebbe essere quella di utilizzare una combinazione di Prometheus e Grafana per avere grafici su tutto ciò che può essere interessante monitorare. Questa soluzione potrebbe essere orchestrata da un orchestratore come Kubernetes per fornire eventuale scalabilità automatica e bilanciamento del carico per ridurre al minimo il tempo delle risposte (ed evitare un sovraccarico).
+
+Infine, un'altro potenziale sviluppo futuro è l'implementazione di strategie di failover e disaster recovery per garantire alta disponibilità e l'alta affidabilità del sistema.

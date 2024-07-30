@@ -1,0 +1,45 @@
+version: '3.8'
+
+# Create app from Dockerfile mapping port 8080
+services:
+  app:
+    image: my-flask-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:8080"
+    # Dependency id DB service that starts before
+    depends_on:
+      - db
+    # Set environment variable for postgresql
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
+
+  # Create db service mapping port 5432
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: blog 
+      POSTGRES_USER: flask
+      POSTGRES_PASSWORD: passwordhere
+    ports:
+      - "5432:5432"
+    # Create volume for data persistence
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  test:
+    image: test:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/kickstart.sh"]
+    depends_on:
+      - db
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db/blog
+
+volumes:
+  db_data:
+

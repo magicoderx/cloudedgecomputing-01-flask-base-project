@@ -53,3 +53,29 @@ Nel progetto esiste un [template](https://github.com/magicoderx/cloudedgecomputi
 Se TUTTI questi test passano con successo, allora il deploy può avvenire senza problemi
 
 ### Docker
+Per questo progetto si è pensato di utilizzare un container Docker per far girare l'applicazione in modo tale da avere un ambiente isolato per ragioni di sicurezza e di semplicità di sviluppo. Per Avviare il container è stato creato un [Dockerfile](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/Dockerfile) che utilizza la versione 3.9 slim di Python per avere un'immagine di dimensione ridotta contenente solo le librerie e i file essenziali per eseguire Python. Vengono successivamente installati tramite `pip install` delle dipendenze specificate nel file *requirements.txt*. Dopodiché si copiano tutti i flie e in particolare il kickstart viene spostato nella working directory.
+
+#### Kickstart.sh
+Il [kickstart](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/kickstart.sh) è uno script bash impostato come entrypoint del Dockerfile che esegue i comandi di avvio dell'applicazione, in particolare verifica se il parametro *RUN_TESTS* è vero: in questo caso esegue il test dell'HTTP (questo viene richiamato ovviamente in fase di testing e non di deploy), altrimenti esegue *gunicorn* per avviare l'applicazione
+
+### Docker compose
+Dato che l'applicazione si basa su un database per leggere i post dei blog, l'idea è quella di creare un'altra immagine docker contenente un database postgres. Per fare in modo che i due container comunichino tra loro è stato scelto di implementare un [docker compose](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/docker-compose.yml) per orchestrare questi container. Il docker compose crea innanzitutto un'immagine "my-flask-app" che viene costruita dal Dockerfile e mappa la porta 80 (esterna) alla porta 8080 (dell'applicazione). È stato scelto di utilizzare la porta 80 esterna per creare una connessione standard (anche se obsoleta) in http. Questo container avrà come dipendenza il database che viene creato inizialmente impostando una variabile d'ambiente per postgresql. Il database sarà quindi costruito con un'immagine di postgres 13 impostando le credenziali di accesso e mappando la porta 5432 dall'esterno per una eventuale gestione. È stato scelto di creare una directory per la persistenza dei dati quando il compose viene eliminato e ricreato (come vedremo in fase di deploy).
+
+Infine viene definito il test che crea un'immagine, appunto di test, costruita come se fosse un'app in produzione
+
+### Deploy
+La fase finale del CD/CI è proprio il deploy dell'applicazione su un'istanza EC2 di AWS. Il deploy viene eseguito tramite un banale [script](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/deploy.sh) che controlla se ci sono o meno delle variabili nel file *.env* locale, ed esegue un rsync sulla macchina remota, copiando al suo interno tutti i file (tranne quelli di github). Dopodiché viene fatta una connessione ssh in cui viene spento il docker compose se attivo per poi costruire quello aggiornato e far partire l'applicazione nel server remoto.
+
+Per accedere al server remoto viene utilizzata una password che può trovarsi in locale allo sviluppatore in un file *.env* oppure, come in questo caso, all'interno dell'ambiente di github: più precisamente nella sezione *Secrets and variables*->*Actions*->*Repository secrets*, Per il deploy da github è stato scelto di utilizzare questo metodo grazie alla sicurezza fornita da GitHub stesso.
+
+#### VM AWS
+La Virtual Machine di AWS è ospitata su un server nella regione di Francoforte ed è un'istanza di tipo T2.small e a cui è attaccato un disco EBS in gp3 su cui è installato il sistema operativo CentOS Stream 9. È stata scelta una VM general purpose in quanto non richiede prestazioni particolari e specifiche. Per accedere a questa macchina in SSH si può accedere tramite una porta (non standard) sia con utente/password che tramite una chiave privata, e le porte dall'esterno sono gestite da un apposito Security Group 
+
+### CD/CI
+Per gestire questo workflow è stato creato un file [ci](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/blob/main/.github/workflows/ci.yml). Il flusso parte quando viene fatto un push al branch principale o quando fiene fatta una pull request sempre verso il branch main. Il primo job che viene eseguito è il test in cui, dopo aver ottenuto il codice dal repository, si configura un ambiente Python in cui vengono installate le dipendenze necessarie che si trovano nel file *requirements.txt*. Da qui parte il primo script Python per eseguire la validazione del markdown e il test per le risposte HTTP che crea un ambiente di testing con tanto di network in cui inserire il db e l'applicazione in modo che possano comunicare tra loro. Viene pulito poi tutto una volta terminato il test
+
+Se il test va a buon fine si passa alla fase di deploy che sostanzialmente non fa altro che eseguire lo script del deploy su AWS. Qui viene impostata la variabile d'ambiente creata nei secrets del repository (la password che utilizzerà lo script per collegarsi in ssh)
+
+Se anche il deploy va a buon fine si può ritenere completata con successo la pipeline CD/CI
+
+## Sviluppi futuri

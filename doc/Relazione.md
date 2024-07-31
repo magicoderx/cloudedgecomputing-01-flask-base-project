@@ -37,7 +37,8 @@ flask db upgrade
 gunicorn -w 4 -b 0.0.0.0:8080 wsgi:app
 ```
 
-## Sviluppo del progetto di DevOps
+## Sviluppo del progetto di DevOps 
+[![Build Status](https://app.travis-ci.com/magicoderx/cloudedgecomputing-01-flask-base-project.svg?token=X5PMcV1XA6GmNNeNsb4q&branch=main)](https://app.travis-ci.com/magicoderx/cloudedgecomputing-01-flask-base-project)
 ### Test
 Sono stati creati due test principali per ottenere informazioni sul corretto funzionamento dell'applicazione: test per le risposte http e test per la validazione della conformità dei markdown presenti in [posts/en/](https://github.com/magicoderx/cloudedgecomputing-01-flask-base-project/tree/main/posts/en)
 

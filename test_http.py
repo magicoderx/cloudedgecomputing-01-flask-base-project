@@ -8,7 +8,7 @@ class FlaskAppTests(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
 
-    # Test that landing page responds with code: '200 OK' and response should contain the text 'Strange Blog'
+    # Test that landing page responds with code: '200 OK' and response should contain the text 'Things I Can Do'
     def test_home_page(self):
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
